@@ -2,7 +2,7 @@
 
 Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set of supporting camera/log spaces and custom JP2499DRT looks.
 
-This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. Simply said for 3D artists - you get an IPR with a close to final grade or it can even be used as the final imagery processing.
+This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. Simply said for 3D artists, you get an IPR with a close to final grade or it can even be used as the final imagery processing.
 
 Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it.
 
