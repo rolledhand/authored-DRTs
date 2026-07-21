@@ -2,9 +2,11 @@
 
 Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set of supporting camera/log spaces and custom JP2499DRT looks.
 
-This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. Simply said for 3D artists, you get an IPR with a close to final grade or it can even be used as the final imagery processing.
+This repository is intended as a practical creative (heavily authored and personally biased) display config rather than a neutral color-management option. Simply said for 3D artists, you get an IPR with a close to final grade or it can even be used as the final if you desire so.
 
 Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it.
+
+(Thinking about a way to share the DRT presets if anyone wanted to tweak them further for their liking)
 
 ## What This Is
 
@@ -17,7 +19,7 @@ Will most likely be evolving this in the future based on explorations and deleti
 - ACES interchange spaces (for pipe sanity, make it ACEScg config yourself if you want to)
 - Texture/data utility spaces with aliases
 
-The config is currently built for a Rec.2020 scene-linear working space and exposes display views for:
+The config is currently built for a scene-linear Rec.2020 working space and exposes display views for:
 
 - sRGB
 - Display P3
