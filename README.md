@@ -13,7 +13,7 @@ Will most likely be evolving this in the future based on explorations and deleti
 `authored-DRTs` contains a slim OCIO v2 config centered on:
 
 - Non-neutral display rendering views
-- Multiple variants of each DRT
+- Multiple authored variants built around each DRT family
 - A retained set of JP2499DRT looks (to be deleted soon most likely)
 - Common camera/log input spaces
 - ACES interchange spaces (for pipe sanity, make it ACEScg config yourself if you want to)
