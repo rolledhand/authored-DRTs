@@ -2,7 +2,7 @@
 
 Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set of supporting camera/log spaces and custom JP2499DRT looks.
 
-This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. I didn't like any of the other base neautral DRTs so I made my own. Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it (very soon deleting JP2499 DRT and the looks there).
+This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. I didn't like any of the other base neautral DRTs so I made my own. Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it.
 
 ## What This Is
 
@@ -13,7 +13,7 @@ This repository is intended as a practical creative (heavily authored and biased
 - A retained set of JP2499DRT looks (to be deleted soon most likely)
 - Common camera/log input spaces
 - ACES interchange spaces (for pipe sanity, make it ACEScg config yourself if you want to)
-- Texture/data utility spaces
+- Texture/data utility spaces with aliases
 
 The config is currently built for a Rec.2020 scene-linear working space and exposes display views for:
 
