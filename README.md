@@ -4,6 +4,9 @@ Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set
 
 This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. I didn't like any of the other base neautral DRTs so I made my own. Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it (very soon deleting JP2499 DRT and the looks there).
 
+![Preview of the authored DRT looks](DRT-previews.jpg)
+
+
 ## What This Is
 
 `authored-DRTs` contains a slim OCIO v2 config centered on:
@@ -109,49 +112,6 @@ The config also keeps a selected JP2499DRT section:
 - `JP2499DRT - Phoenix Drift`
 
 Older STP LUT definitions are intentionally kept in the config for compatibility and future reference, even when not exposed as active views.
-
-## Folder Layout
-
-```text
-.
-+-- config-2020.ocio
-+-- OpenDRT
-|   +-- OpenDRT support LUTs
-+-- 2499DRT
-|   +-- 2499log_to_*.cube
-|   +-- STP-2399Log-*.cube
-+-- luts
-    +-- camera/log utility LUTs
-    +-- matrix/transfer support files
-```
-
-## Installing
-
-Point your application to the OCIO config:
-
-```sh
-export OCIO=/path/to/authored-DRTs/config-2020.ocio
-```
-
-Or choose `config-2020.ocio` directly in applications that provide an OCIO config picker.
-
-The config has been tested during development with OCIO-aware tools such as Nuke and other DCC/grading applications, but behavior can vary by host application.
-
-## Validation
-
-After editing the config, validate it with:
-
-```sh
-ociocheck --iconfig /path/to/authored-DRTs/config-2020.ocio
-```
-
-Recommended sanity checks:
-
-- All referenced LUT files resolve from the configured search path.
-- All active displays and views build processors.
-- OpenDRT variants use the intended OpenDRT v1.1 display-target LUTs.
-- No display transform is added after a final OpenDRT display LUT.
-- Custom OpenDRT grading transforms occur before the final display LUT.
 
 ## Authoring Notes
 
