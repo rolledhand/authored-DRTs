@@ -2,10 +2,9 @@
 
 Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set of supporting camera/log spaces and custom JP2499DRT looks.
 
-This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. I didn't like any of the other base neutral DRTs so I made my own. Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it.
+This repository is intended as a practical creative (heavily authored and biased) display config rather than a neutral color-management option. I didn't like any of the other base neutral DRTs so I made my own. 
 
-![Preview of the authored DRT looks](DRT-previews.jpg)
-
+Will most likely be evolving this in the future based on explorations and deleting stuff as I'll get bored from it.
 
 ## What This Is
 
@@ -24,6 +23,8 @@ The config is currently built for a Rec.2020 scene-linear working space and expo
 - Display P3
 - Rec.1886
 - Log utility views
+
+![Preview of the authored DRT looks](DRT-previews.jpg)
 
 ## Included Config
 
