@@ -1,0 +1,2542 @@
+ocio_profile_version: 2.0
+# Slim OpenDRT/JP2499DRT Rec.2020 config.
+# Legacy DRT display outputs and unused LUT folders were pruned.
+
+environment:
+  {}
+search_path: "luts:OpenDRT:OpenDRT/transfer-functions:2499DRT"
+strictparsing: true
+luma: [0.2126, 0.7152, 0.0722]
+
+description: RRT version ut33, custom Houdini/MoonRay Linear Rec.2020 working config
+
+roles:
+  # Keep this as the config reference if your colorspaces are authored around XYZ E.
+  reference: Linear CIE-XYZ E
+
+  # Internal scene/render linear space
+  scene_linear: Linear Rec.2020
+  rendering: Linear Rec.2020
+
+  # Default color space for byte images
+  default_byte: sRGB - Texture
+
+  # Default color space for float images
+  default_float: Linear Rec.2020
+
+  # Sequencer/UI-ish default
+  default_sequencer: sRGB - Texture
+
+  # Color picker should stay display/simple, not scene wide gamut.
+  color_picking: sRGB - Texture
+
+  # Non-color data
+  data: Raw
+
+  # OCIO/ACES interop roles
+  aces_interchange: ACES2065-1
+  cie_xyz_d65_interchange: Linear CIE-XYZ D65
+
+  # General app roles
+  color_timing: T-LogeE - E-Gamut 2
+  compositing_log: T-LogeE - E-Gamut 2
+  compositing_linear: Linear Rec.2020
+  default: Linear Rec.2020
+  matte_paint: sRGB - Texture
+  texture_paint: sRGB - Texture
+  srgb_linear: Linear Rec.709
+
+  # Substance Painter roles
+  # 8/16-bit bitmap color textures are almost always authored/display-referred sRGB.
+  # Floating exports are treated as scene-linear Rec.2020 only if explicitly authored that way.
+  substance_3d_painter_standard_srgb: sRGB - Texture
+  substance_3d_painter_bitmap_import_8bit: sRGB - Texture
+  substance_3d_painter_bitmap_import_16bit: sRGB - Texture
+  substance_3d_painter_bitmap_import_floating: Linear Rec.2020
+  substance_3d_painter_bitmap_export_8bit: sRGB - Texture
+  substance_3d_painter_bitmap_export_16bit: sRGB - Texture
+  substance_3d_painter_bitmap_export_floating: Linear Rec.2020
+  substance_3d_painter_substance_material: sRGB - Texture
+
+# When using a spectral renderer, only change this if the renderer/config explicitly expects it.
+# XYZ: Linear CIE-XYZ D65
+
+file_rules:
+  # --------------------------------------------------------------------------
+  # 01. Path/name overrides
+  # These are regex rules instead of pattern-only Basic Rules because some
+  # OCIO builds reject extension: "*" with "file extension pattern is empty".
+  # Keep these first so intentional naming beats generic file-extension rules.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: g22_rec709, regex: ".*[/_.-]g22_rec709[/_.-].*|.*[/_.-]g22_rec709\\..*|.*_g22_rec709_.*|.*_g22_rec709\\..*", colorspace: sRGB}
+  - !<Rule> {name: g22_encoded_rec709, regex: ".*[/_.-]g22_encoded_rec709[/_.-].*|.*[/_.-]g22_encoded_rec709\\..*|.*_g22_encoded_rec709_.*|.*_g22_encoded_rec709\\..*", colorspace: sRGB}
+  - !<Rule> {name: srgb_tx, regex: ".*[/_.-]srgb_tx[/_.-].*|.*[/_.-]srgb_tx\\..*|.*_srgb_tx_.*|.*_srgb_tx\\..*", colorspace: sRGB - Texture}
+  - !<Rule> {name: srgb_texture, regex: ".*[/_.-]srgb_texture[/_.-].*|.*[/_.-]srgb_texture\\..*|.*_srgb_texture_.*|.*_srgb_texture\\..*", colorspace: sRGB - Texture}
+  - !<Rule> {name: srgb_encoded_p3d65, regex: ".*[/_.-]srgb_encoded_p3d65[/_.-].*|.*[/_.-]srgb_encoded_p3d65\\..*|.*_srgb_encoded_p3d65_.*|.*_srgb_encoded_p3d65\\..*", colorspace: sRGB Encoded P3-D65}
+  - !<Rule> {name: srgb_p3d65, regex: ".*[/_.-]srgb_p3d65[/_.-].*|.*[/_.-]srgb_p3d65\\..*|.*_srgb_p3d65_.*|.*_srgb_p3d65\\..*", colorspace: sRGB Encoded P3-D65}
+  - !<Rule> {name: srgb_displayp3, regex: ".*[/_.-]srgb_displayp3[/_.-].*|.*[/_.-]srgb_displayp3\\..*|.*_srgb_displayp3_.*|.*_srgb_displayp3\\..*", colorspace: sRGB Encoded P3-D65}
+  - !<Rule> {name: srgb_upper, regex: ".*[/_.-]sRGB[/_.-].*|.*[/_.-]sRGB\\..*|.*_sRGB_.*|.*_sRGB\\..*", colorspace: sRGB - Texture}
+  - !<Rule> {name: srgb_lower, regex: ".*[/_.-]srgb[/_.-].*|.*[/_.-]srgb\\..*|.*_srgb_.*|.*_srgb\\..*", colorspace: sRGB - Texture}
+
+  - !<Rule> {name: raw_any, regex: ".*[/_.-][rR][aA][wW][/_.-].*|.*[/_.-][rR][aA][wW]\\..*|.*_[rR][aA][wW]_.*|.*_[rR][aA][wW]\\..*", colorspace: Raw}
+  - !<Rule> {name: data, regex: ".*[/_.-]data[/_.-].*|.*[/_.-]data\\..*|.*_data_.*|.*_data\\..*", colorspace: Raw}
+  - !<Rule> {name: noncolor, regex: ".*[/_.-]noncolor[/_.-].*|.*[/_.-]noncolor\\..*|.*_noncolor_.*|.*_noncolor\\..*", colorspace: Raw}
+  - !<Rule> {name: non_color, regex: ".*[/_.-]non_color[/_.-].*|.*[/_.-]non_color\\..*|.*_non_color_.*|.*_non_color\\..*", colorspace: Raw}
+  - !<Rule> {name: utility_raw, regex: ".*[/_.-]utility_raw[/_.-].*|.*[/_.-]utility_raw\\..*|.*_utility_raw_.*|.*_utility_raw\\..*", colorspace: Raw}
+
+  - !<Rule> {name: rec2020, regex: ".*Linear Rec\\.2020.*", colorspace: Linear Rec.2020}
+  - !<Rule> {name: lin_rec2020, regex: ".*lin_rec2020.*", colorspace: Linear Rec.2020}
+  - !<Rule> {name: linrec2020, regex: ".*linrec2020.*", colorspace: Linear Rec.2020}
+  - !<Rule> {name: linear_rec2020, regex: ".*linear_rec2020.*", colorspace: Linear Rec.2020}
+  - !<Rule> {name: bt2020, regex: ".*lin_bt2020.*", colorspace: Linear Rec.2020}
+  - !<Rule> {name: linear_bt2020, regex: ".*linear_bt2020.*", colorspace: Linear Rec.2020}
+
+  - !<Rule> {name: acescg, regex: ".*ACEScg.*", colorspace: ACEScg}
+  - !<Rule> {name: acescg_lower, regex: ".*acescg.*", colorspace: ACEScg}
+
+  - !<Rule> {name: rec709, regex: ".*Linear Rec\\.709.*", colorspace: Linear Rec.709}
+  - !<Rule> {name: lin_rec709, regex: ".*lin_rec709.*", colorspace: Linear Rec.709}
+  - !<Rule> {name: linrec709, regex: ".*linrec709.*", colorspace: Linear Rec.709}
+  - !<Rule> {name: linear_rec709, regex: ".*linear_rec709.*", colorspace: Linear Rec.709}
+  - !<Rule> {name: lin_srgb, regex: ".*lin_srgb.*", colorspace: Linear Rec.709}
+  - !<Rule> {name: linear_srgb, regex: ".*linear_srgb.*", colorspace: Linear Rec.709}
+
+  # --------------------------------------------------------------------------
+  # 02. Houdini / MoonRay .tx rule
+  # Keep .tx Raw because utility .tx maps are data, and basecolor .tx should
+  # already be converted to Linear Rec.2020 by maketx/oiiotool before rendering.
+  # This avoids OCIO applying a second transform to .tx files.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: tx, pattern: "*", extension: "tx", colorspace: Raw}
+
+  # --------------------------------------------------------------------------
+  # 03. PBR / utility maps that are always data
+  # Keep these before generic byte-image rules.
+  # Color-bearing material maps are handled separately below.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: PBR_Data_Maps, regex: ".*(_(Normal|normal|NRM|nrm|Norm|norm|NormalGL|normalGL|NormalDX|normalDX|Roughness|roughness|Rough|rough|Metallic|metallic|Metalness|metalness|Metal|metal|Height|height|Displacement|displacement|Disp|disp|Bump|bump|AmbientOcclusion|ambientOcclusion|Occlusion|occlusion|AO|ao|Glossiness|glossiness|Gloss|gloss|Cavity|cavity|Curvature|curvature|Thickness|thickness|Anisotropy|anisotropy|Aniso|aniso|AnisotropyLevel|anisotropyLevel|Anisotropy_Level|anisotropy_level|AnisoLevel|anisoLevel|Aniso_Level|aniso_level|AnisotropyAngle|anisotropyAngle|Anisotropy_Angle|anisotropy_angle|AnisoAngle|anisoAngle|Aniso_Angle|aniso_angle|Mask|mask|ID|id|MatID|matid|Opacity|opacity|Alpha|alpha|_nm|_nrm|_normal|_rough|_roughness|_rm|_metal|_metallic|_metalness|_mm|_height|_hm|_disp|_dm|_bump|_ao|_occ|_gloss|_gm|_cavity|_cm|_curv|_thick|_aniso|_anisotropy|_anisolevel|_aniso_level|_anisotropy_level|_anisoangle|_aniso_angle|_anisotropy_angle|_mask|_id|_opacity|_alpha|_arm|_orm|_om)).*", colorspace: Raw}
+
+  - !<Rule> {name: PBR_Mask_Maps, regex: ".*(_(SubsurfaceMask|subsurfaceMask|Subsurface_Mask|subsurface_mask|SSSMask|sssMask|SSS_Mask|sss_mask|TransmissionMask|transmissionMask|Transmission_Mask|transmission_mask|TranslucencyMask|translucencyMask|Translucency_Mask|translucency_mask|SpecularLevel|specularLevel|Specular_Level|specular_level|SpecularAmount|specularAmount|Specular_Amount|specular_amount|CoatMask|coatMask|Coat_Mask|coat_mask|SheenMask|sheenMask|Sheen_Mask|sheen_mask)).*", colorspace: Raw}
+
+  # --------------------------------------------------------------------------
+  # 04. Color-bearing texture maps
+  # Byte-image basecolor/albedo/diffuse/color maps are sRGB.
+  # Ambiguous SSS/transmission/specular maps are treated as color only when
+  # their names explicitly say color/colour.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: BaseColor_Byte_Images, regex: ".*(_(BaseColor|baseColor|basecolor|Base_Color|base_color|Albedo|albedo|Diffuse|diffuse|Diff|diff|Color|color|Colour|colour|Col|col|Base|base)).*\\.(png|jpg|jpeg|tga|tif|tiff|bmp|webp)$", colorspace: sRGB - Texture}
+
+  - !<Rule> {name: Material_Color_Byte_Images, regex: ".*(_(SubsurfaceColor|subsurfaceColor|Subsurface_Color|subsurface_color|SSSColor|sssColor|SSS_Color|sss_color|TransmissionColor|transmissionColor|Transmission_Color|transmission_color|TranslucencyColor|translucencyColor|Translucency_Color|translucency_color|SpecularColor|specularColor|Specular_Color|specular_color|CoatColor|coatColor|Coat_Color|coat_color|SheenColor|sheenColor|Sheen_Color|sheen_color)).*\\.(png|jpg|jpeg|tga|tif|tiff|bmp|webp)$", colorspace: sRGB - Texture}
+
+  # --------------------------------------------------------------------------
+  # 05. USDZ embedded texture rules
+  # Kept before generic byte-image rules so packed textures keep their intent.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: __usdz_jpg, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[jj][pp][gg]\\]"}
+  - !<Rule> {name: __usdz_jpeg, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[jj][pp][ee][gg]\\]"}
+  - !<Rule> {name: __usdz_tga, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[tt][gg][aa]\\]"}
+  - !<Rule> {name: __usdz_png, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[pp][nn][gg]\\]"}
+  - !<Rule> {name: __usdz_tif, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[tt][ii][ff]\\]"}
+  - !<Rule> {name: __usdz_tiff, colorspace: sRGB - Texture, regex: ".*[uu][ss][dd][zz]\\[.*[tt][ii][ff][ff]\\]"}
+  - !<Rule> {name: __usdz_exr, colorspace: Linear Rec.2020, regex: ".*[uu][ss][dd][zz]\\[.*[ee][xx][rr]\\]"}
+
+  # --------------------------------------------------------------------------
+  # 06. Standard byte image formats
+  # Generic fallback. Utility maps should already be caught above.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: jpg, pattern: "*", extension: "jpg", colorspace: sRGB - Texture}
+  - !<Rule> {name: jpeg, pattern: "*", extension: "jpeg", colorspace: sRGB - Texture}
+  - !<Rule> {name: tga, pattern: "*", extension: "tga", colorspace: sRGB - Texture}
+  - !<Rule> {name: png, pattern: "*", extension: "png", colorspace: sRGB - Texture}
+  - !<Rule> {name: tif, pattern: "*", extension: "tif", colorspace: sRGB - Texture}
+  - !<Rule> {name: tiff, pattern: "*", extension: "tiff", colorspace: sRGB - Texture}
+  - !<Rule> {name: bmp, pattern: "*", extension: "bmp", colorspace: sRGB - Texture}
+  - !<Rule> {name: webp, pattern: "*", extension: "webp", colorspace: sRGB - Texture}
+
+  # --------------------------------------------------------------------------
+  # 07. Floating / HDR formats
+  # EXR defaults to Linear Rec.2020 in this config unless the filename/path
+  # explicitly says ACEScg, Linear Rec.2020, Linear Rec.709, Raw, etc. above.
+  # HDRIs stay Linear Rec.709 unless explicitly overridden above.
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: OpenEXR, pattern: "*", extension: "exr", colorspace: Linear Rec.2020}
+  - !<Rule> {name: hdr, pattern: "*", extension: "hdr", colorspace: Linear Rec.709}
+
+  # --------------------------------------------------------------------------
+  # 08. OCIO color-space-name path search and final fallback
+  # --------------------------------------------------------------------------
+
+  - !<Rule> {name: ColorSpaceNamePathSearch}
+  - !<Rule> {name: Default, colorspace: Linear Rec.2020}
+
+displays: 
+  sRGB:
+    - !<View> {name: Flawed Emulsion, colorspace: Flawed Emulsion sRGB Display}
+    - !<View> {name: Flawed Emulsion - Mineral Fade, colorspace: Flawed Emulsion - Mineral Fade sRGB Display}
+    - !<View> {name: Flawed Emulsion - Chemical Veil, colorspace: Flawed Emulsion - Chemical Veil sRGB Display}
+    - !<View> {name: Flawed Emulsion - Spilled, colorspace: Flawed Emulsion - Spilled sRGB Display}
+    - !<View> {name: Flawed Emulsion 2, colorspace: Flawed Emulsion 2 sRGB Display}
+    - !<View> {name: Bleached, colorspace: Bleached sRGB Display}
+    - !<View> {name: Bleached - Negative Print, colorspace: Bleached - Negative Print sRGB Display}
+    - !<View> {name: Bleached - Oxide Residue, colorspace: Bleached - Oxide Residue sRGB Display}
+    - !<View> {name: Gentle Touch, colorspace: Gentle Touch sRGB Display}
+    - !<View> {name: Gentle Touch - Negative Print, colorspace: Gentle Touch - Negative Print sRGB Display}
+    - !<View> {name: Gentle Touch - Surreal Push, colorspace: Gentle Touch - Surreal Push sRGB Display}
+    - !<View> {name: Shifted Crisp, colorspace: Shifted Crisp sRGB Display}
+    - !<View> {name: OpenDRT Standard, colorspace: OpenDRT Standard sRGB Display}
+    - !<View> {name: JP2499DRT, colorspace: 2499DRT Base sRGB}
+    - !<View> {name: JP2499DRT - Editorial Split, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Editorial Split"}
+    - !<View> {name: JP2499DRT - Hard Contrast, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Hard Contrast"}
+    - !<View> {name: JP2499DRT - Photochemical, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Photochemical"}
+    - !<View> {name: JP2499DRT - Chemical Drift, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Chemical Drift"}
+    - !<View> {name: JP2499DRT - Tarnished Print, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Tarnished Print"}
+    - !<View> {name: JP2499DRT - Graphite Matte, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Graphite Matte"}
+    - !<View> {name: JP2499DRT - Soot, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Soot"}
+    - !<View> {name: JP2499DRT - Carbon Plate, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Carbon Plate"}
+    - !<View> {name: JP2499DRT - Carbon Black, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Carbon Black"}
+    - !<View> {name: JP2499DRT - Blue Carbon Print, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Blue Carbon Print"}
+    - !<View> {name: JP2499DRT - Funeral Bronze, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Funeral Bronze"}
+    - !<View> {name: JP2499DRT - Phoenix Drift, colorspace: 2499DRT Base sRGB, looks: "JP2499DRT - Phoenix Drift"}
+    - !<View> {name: None, colorspace: Raw}
+  Display P3:
+    - !<View> {name: Flawed Emulsion, colorspace: Flawed Emulsion Display P3}
+    - !<View> {name: Flawed Emulsion - Mineral Fade, colorspace: Flawed Emulsion - Mineral Fade Display P3}
+    - !<View> {name: Flawed Emulsion - Chemical Veil, colorspace: Flawed Emulsion - Chemical Veil Display P3}
+    - !<View> {name: Flawed Emulsion - Spilled, colorspace: Flawed Emulsion - Spilled Display P3}
+    - !<View> {name: Flawed Emulsion 2, colorspace: Flawed Emulsion 2 Display P3}
+    - !<View> {name: Bleached, colorspace: Bleached Display P3}
+    - !<View> {name: Bleached - Negative Print, colorspace: Bleached - Negative Print Display P3}
+    - !<View> {name: Bleached - Oxide Residue, colorspace: Bleached - Oxide Residue Display P3}
+    - !<View> {name: Gentle Touch, colorspace: Gentle Touch Display P3}
+    - !<View> {name: Gentle Touch - Negative Print, colorspace: Gentle Touch - Negative Print Display P3}
+    - !<View> {name: Gentle Touch - Surreal Push, colorspace: Gentle Touch - Surreal Push Display P3}
+    - !<View> {name: Shifted Crisp, colorspace: Shifted Crisp Display P3}
+    - !<View> {name: OpenDRT Standard, colorspace: OpenDRT Standard Display P3}
+    - !<View> {name: JP2499DRT, colorspace: 2499DRT Base Display P3}
+    - !<View> {name: JP2499DRT - Editorial Split, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Editorial Split"}
+    - !<View> {name: JP2499DRT - Hard Contrast, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Hard Contrast"}
+    - !<View> {name: JP2499DRT - Photochemical, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Photochemical"}
+    - !<View> {name: JP2499DRT - Chemical Drift, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Chemical Drift"}
+    - !<View> {name: JP2499DRT - Tarnished Print, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Tarnished Print"}
+    - !<View> {name: JP2499DRT - Graphite Matte, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Graphite Matte"}
+    - !<View> {name: JP2499DRT - Soot, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Soot"}
+    - !<View> {name: JP2499DRT - Carbon Plate, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Carbon Plate"}
+    - !<View> {name: JP2499DRT - Carbon Black, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Carbon Black"}
+    - !<View> {name: JP2499DRT - Blue Carbon Print, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Blue Carbon Print"}
+    - !<View> {name: JP2499DRT - Funeral Bronze, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Funeral Bronze"}
+    - !<View> {name: JP2499DRT - Phoenix Drift, colorspace: 2499DRT Base Display P3, looks: "JP2499DRT - Phoenix Drift"}
+    - !<View> {name: None, colorspace: Raw}
+  Rec.1886:
+    - !<View> {name: Flawed Emulsion, colorspace: Flawed Emulsion Rec.1886}
+    - !<View> {name: Flawed Emulsion - Mineral Fade, colorspace: Flawed Emulsion - Mineral Fade Rec.1886}
+    - !<View> {name: Flawed Emulsion - Chemical Veil, colorspace: Flawed Emulsion - Chemical Veil Rec.1886}
+    - !<View> {name: Flawed Emulsion - Spilled, colorspace: Flawed Emulsion - Spilled Rec.1886}
+    - !<View> {name: Flawed Emulsion 2, colorspace: Flawed Emulsion 2 Rec.1886}
+    - !<View> {name: Bleached, colorspace: Bleached Rec.1886}
+    - !<View> {name: Bleached - Negative Print, colorspace: Bleached - Negative Print Rec.1886}
+    - !<View> {name: Bleached - Oxide Residue, colorspace: Bleached - Oxide Residue Rec.1886}
+    - !<View> {name: Gentle Touch, colorspace: Gentle Touch Rec.1886}
+    - !<View> {name: Gentle Touch - Negative Print, colorspace: Gentle Touch - Negative Print Rec.1886}
+    - !<View> {name: Gentle Touch - Surreal Push, colorspace: Gentle Touch - Surreal Push Rec.1886}
+    - !<View> {name: Shifted Crisp, colorspace: Shifted Crisp Rec.1886}
+    - !<View> {name: OpenDRT Standard, colorspace: OpenDRT Standard Rec.1886}
+    - !<View> {name: JP2499DRT, colorspace: 2499DRT Base Rec.1886}
+    - !<View> {name: JP2499DRT - Editorial Split, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Editorial Split"}
+    - !<View> {name: JP2499DRT - Hard Contrast, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Hard Contrast"}
+    - !<View> {name: JP2499DRT - Photochemical, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Photochemical"}
+    - !<View> {name: JP2499DRT - Chemical Drift, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Chemical Drift"}
+    - !<View> {name: JP2499DRT - Tarnished Print, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Tarnished Print"}
+    - !<View> {name: JP2499DRT - Graphite Matte, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Graphite Matte"}
+    - !<View> {name: JP2499DRT - Soot, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Soot"}
+    - !<View> {name: JP2499DRT - Carbon Plate, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Carbon Plate"}
+    - !<View> {name: JP2499DRT - Carbon Black, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Carbon Black"}
+    - !<View> {name: JP2499DRT - Blue Carbon Print, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Blue Carbon Print"}
+    - !<View> {name: JP2499DRT - Funeral Bronze, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Funeral Bronze"}
+    - !<View> {name: JP2499DRT - Phoenix Drift, colorspace: 2499DRT Base Rec.1886, looks: "JP2499DRT - Phoenix Drift"}
+    - !<View> {name: None, colorspace: Raw}
+  Log:
+    - !<View> {name: JP2499 Log, colorspace: 2499DRT Log (2499)}
+    - !<View> {name: Filmlight T-LogE - E-Gamut 2, colorspace: T-LogeE - E-Gamut 2}
+    - !<View> {name: ACEScc, colorspace: ACEScc}
+    - !<View> {name: ACEScct, colorspace: ACEScct}
+    - !<View> {name: None, colorspace: Raw}
+
+active_displays: [sRGB, Display P3, Rec.1886, Log]
+
+active_views: [Flawed Emulsion, Flawed Emulsion - Mineral Fade, Flawed Emulsion - Chemical Veil, Flawed Emulsion - Spilled, Flawed Emulsion 2, Bleached, Bleached - Negative Print, Bleached - Oxide Residue, Gentle Touch, Gentle Touch - Negative Print, Gentle Touch - Surreal Push, Shifted Crisp, OpenDRT Standard, JP2499DRT, JP2499DRT - Editorial Split, JP2499DRT - Hard Contrast, JP2499DRT - Photochemical, JP2499DRT - Chemical Drift, JP2499DRT - Tarnished Print, JP2499DRT - Graphite Matte, JP2499DRT - Soot, JP2499DRT - Carbon Plate, JP2499DRT - Carbon Black, JP2499DRT - Blue Carbon Print, JP2499DRT - Funeral Bronze, JP2499DRT - Phoenix Drift, JP2499 Log, Filmlight T-LogE - E-Gamut 2, ACEScc, ACEScct, None]
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Legacy DRT/display-output colorspaces were intentionally pruned from this slim OpenDRT/JP2499DRT config.
+# Camera/input, ACES interchange, texture/file-rule, OpenDRT, and JP2499DRT spaces remain available.
+
+colorspaces:
+#Linear Stuff
+
+  - !<ColorSpace> #Linear CIE-XYZ E
+    name: Linear CIE-XYZ E
+    aliases: ["FilmLight: Linear - XYZ", Linear CIE-XYZ I-E]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      1931 CIE XYZ standard with assumed illuminant E white point
+    isdata: false
+
+  - !<ColorSpace> #Linear CIE-XYZ D65
+    name: Linear CIE-XYZ D65
+    aliases: [cie_xyz_d65, CIE-XYZ-D65, XYZ, Linear CIE-XYZ I-D65]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      1931 CIE XYZ with adapted illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<FileTransform> {src: xyz_E_to_D65.spimtx, interpolation: linear}
+
+  - !<ColorSpace> #Linear CIE-XYZ DCI
+    name: Linear CIE-XYZ DCI
+    aliases: [cie_xyz_dci, CIE-XYZ-DCI, Linear CIE-XYZ DCI]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      1931 CIE XYZ with adapted DCI illuminant via Bradford
+    isdata: false
+    from_scene_reference: !<MatrixTransform> {matrix: [ 0.93137082, -0.04181835, 0.00503453, 0, -0.0638608, 1.0589086, 0.00495221, 0, -0.00358392, 0.00889451, 0.94910541, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear DCI-P3 DCI
+    name: Linear DCI-P3 DCI
+    aliases: []
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      DCI-P3 Linear space with DCI white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ DCI}     
+        - !<MatrixTransform> {matrix: [2.7253940, -1.0180030, -0.4401632, 0, -0.7951680, 1.6897321, 0.0226472, 0, 0.0412419, -0.0876390, 1.1009294, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear BT.709 I-E
+    name: Linear BT.709 I-E
+    aliases: []
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear BT.709 Tristimulus with I-E white point
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<MatrixTransform> {matrix: [2.6896551724137931, -1.2758620689655173, -0.4137931034482757, 0, -1.0221081721279115, 1.9782866166600865, 0.0438215554678247, 0, 0.0612244897959184, -0.2244897959183672, 1.1632653061224481, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear Rec.709
+    name: Linear Rec.709
+    aliases: [Linear, Linear BT.709, Linear BT.709 I-D65, Linear Tristimulus, linrec709, Utility - Linear - sRGB, Utility - Linear - Rec.709, lin_srgb, Linear Rec.709 (sRGB), lin_rec709_srgb, lin_rec709, lin_rec709_scene, lin_srgb, "CGI: Linear - Rec.709"]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Linear BT.709(sRGB) with illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear CIE-XYZ D65}
+        - !<MatrixTransform> {matrix: [3.2409699, -1.5373832, -0.4986108, 0, -0.9692436, 1.8759675, 0.0415551, 0, 0.0556301, -0.2039770, 1.0569715, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear Adobe RGB (1998)
+    name: Linear Adobe RGB (1998)
+    aliases: []
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: |
+      Convert from Linear DCDM XYZ to Linear Adobe RGB (1998)
+    isdata: false
+    encoding: scene-linear
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      name: Linear DCDM XYZ to Linear Adobe RGB (1998)
+      children:
+        - !<MatrixTransform> {matrix: [2.0415900, -0.5650100, -0.3447300, 0, -0.9692400, 1.8759700, 0.0415600, 0, 0.0134400, -0.1183600, 1.0151700, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear ProPhoto RGB
+    name: Linear ProPhoto RGB
+    aliases: []
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: |
+      Convert from Linear DCDM XYZ to Linear ProPhoto RGB
+    isdata: false
+    encoding: scene-linear
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      name: Linear DCDM XYZ to Linear ProPhoto RGB
+      children:
+        - !<MatrixTransform> {matrix: [1.3460, -0.2556, -0.0511, 0, -0.5446, 1.5082, 0.0205, 0, 0, 0, 1.2123, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear DCI-P3 I-E
+    name: Linear DCI-P3 I-E
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear DCI-P3 Tristimulus with I-E white point
+    isdata: false
+    allocation: uniform
+    allocationvars: [-12.4739, 12.5261]
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<MatrixTransform> {matrix: [2.1506740681998422, -0.8033306899286285, -0.3473433782712135, 0, -0.8669410150891632, 1.8422496570644722, 0.0246913580246913, 0, 0.0391091797935906, -0.0831070070613798, 1.0439978272677890, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear DCI-P3 D65
+    name: Linear DCI-P3 D65
+    aliases: [Linear DCI-P3 I-D65, Linear P3-D65, lin_p3d65, Utility - Linear - P3-D65, Apple DCI-P3 D65]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Linear DCI-P3 with illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear CIE-XYZ D65}
+        - !<MatrixTransform> {matrix: [2.4934969, -0.9313836, -0.4027108, 0, -0.8294890, 1.7626641, 0.0236247, 0, 0.0358458, -0.0761724, 0.9568845, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear BT.2020 I-E
+    name: Linear BT.2020 I-E
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear BT.2020 Tristimulus with I-E white point
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<MatrixTransform> {matrix: [1.5498639396171363, -0.3211143451931252, -0.2287495944240111, 0, -0.6904600461999933, 1.6741291531150519, 0.0163308930849413, 0,  0.0192370654890717, -0.0466432957748727, 1.0274062302858002, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear Rec.2020
+    name: Linear Rec.2020
+    aliases: [Linear BT.2020 I-D65, Linear BT.2020, lin_rec2020, lin_rec2020_scene, Utility - Linear - Rec.2020]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Linear BT.2020 with illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear CIE-XYZ D65}
+        - !<MatrixTransform> {matrix: [1.7166512, -0.3556708, -0.2533663, 0, -0.6666844, 1.6164812, 0.0157685, 0, 0.0176399, -0.0427706, 0.9421031, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #ACES2065-1
+    name: ACES2065-1
+    aliases: [Linear ACES - AP0, Linear ACES, aces2065_1, aces, ACES, aces_ap0, ACES - ACES2065-1, lin_ap0, lin_ap0_scene, "ACES: Linear - AP0"]
+    family: ACES
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Open Domain Linear AP0 Tristimulus with D60 white point AKA ACES2065-1
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<BuiltinTransform> {style: "UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD", direction: inverse}
+
+  - !<ColorSpace> #ACEScg
+    name: ACEScg
+    aliases: [Linear ACES - AP1, Linear ACEScg, lin_ap1, lin_acescg, ACES - ACEScg, acescg, aces_cg, aces-cg, aces_ap1, "ACEScg: Linear - AP1", lin_ap1_scene]
+    family: ACES
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Open Domain Linear AP1 Tristimulus with D60 white point - AKA ACEScg
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<BuiltinTransform> {style: "UTILITY - ACES-AP1_to_CIE-XYZ-D65_BFD", direction: inverse}
+
+  - !<ColorSpace> #Linear FilmLight E-Gamut
+    name: Linear FilmLight E-Gamut
+    aliases: [Linear E-Gamut I-D65, "FilmLight: Linear - E-Gamut", "FilmLight: Linear : E-Gamut"]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Linear E-Gamut with illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5250528, -0.3159135, -0.1226583, 0, -0.5091526, 1.3333274, 0.1382844, 0, 0.0957153, 0.0508974, 0.7879558, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear FilmLight E-Gamut 2
+    name: Linear FilmLight E-Gamut 2
+    aliases: [Linear E-Gamut 2 I-D65, "FilmLight: Linear : E-Gamut 2"]
+    family: Chromaticity
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Linear E-Gamut2 with illuminant D65 white point
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.4277603, -0.2370341, -0.1101784, 0.0000000, -0.4611742, 1.2944288, 0.1321302, 0.0000000, 0.1054776, 0.0641142, 0.7672997, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear DaVinci WideGamut
+    name: Linear DaVinci WideGamut
+    aliases: [lin_davinci_widegamut]
+    family: Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear DaVinci WideGamut colorspace used for DaVinciResolve interchange
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5166720, -0.2814780, -0.1469636, 0, -0.4649171, 1.2514238, 0.1748846, 0, 0.0648490, 0.1091393, 0.7614146, 0, 0, 0, 0, 1]}
+
+
+#Camera Linear Stuff
+
+  - !<ColorSpace> #Linear ARRI Wide Gamut 3
+    name: Linear ARRI Wide Gamut 3
+    aliases: [lin_arri_wide_gamut_3, Input - ARRI - Linear - ALEXA Wide Gamut, lin_alexawide]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear AWG 3
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.789066, -0.482534, -0.200076, 0, -0.639849, 1.396400, 0.194432, 0, -0.041532, 0.082335, 0.878868, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear ARRI Wide Gamut 4
+    name: Linear ARRI Wide Gamut 4
+    aliases: [lin_arri_wide_gamut_4, lin_awg4]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear AWG 4 AKA ARRI Reveal
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5092155, -0.2505973, -0.1688115, 0, -0.4915455, 1.3612455, 0.0972829, 0, 0, 0, 0.9182250, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear BMD WideGamut Gen5
+    name: Linear BMD WideGamut Gen5
+    aliases: [lin_bmd_widegamut_gen5]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear BMD WideGamut Gen5
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.8663823, -0.5183973, -0.2346098, 0, -0.6003425, 1.3781490, 0.1767318, 0, 0.0024520, 0.0863997, 0.8369427, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear CinemaGamut D55
+    name: Linear CinemaGamut D55
+    aliases: [lin_cinemagamut_d55, Input - Canon - Linear - Canon Cinema Gamut Daylight, lin_canoncgamutday]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Canon CinemaGamut Daylight
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.4898183, -0.2608959, -0.1424265, 0, -0.4581666, 1.2616278, 0.1596236, 0, -0.0703497, 0.2215577, 0.7761816, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear V-Gamut
+    name: Linear V-Gamut
+    aliases: [lin_vgamut, Input - Panasonic - Linear - V-Gamut]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Panasonic V-Gamut colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5890120, -0.3132040, -0.1809650, 0, -0.5340530, 1.3960110, 0.1024580, 0, 0.0111790, 0.0031940, 0.9055350, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear REDWideGamutRGB
+    name: Linear REDWideGamutRGB
+    aliases: []
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear RED WideGamutRGB colorspace used for IPP2
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.4128066, -0.1775224, -0.1517704, 0, -0.4862032, 1.2906962, 0.1574003, 0, -0.0371388, 0.2863758, 0.6876796, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear S-Gamut
+    name: Linear S-Gamut
+    aliases: [lin_sgamut, Input - Sony - Linear - S-Gamut]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Sony S-Gamut (so called "camera native") colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5073999, -0.2458221, -0.1716117, 0, -0.5181517, 1.3553912, 0.1258787, 0, 0.0155117, -0.0078728, 0.9119164, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear S-Gamut3
+    name: Linear S-Gamut3
+    aliases: [lin_sgamut3, Input - Sony - Linear - S-Gamut3]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Sony S-Gamut3 (so called "camera native") colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.5073999, -0.2458221, -0.1716117, 0, -0.5181517, 1.3553912, 0.1258787, 0, 0.0155117, -0.0078728, 0.9119164, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear S-Gamut3.Cine
+    name: Linear S-Gamut3.Cine
+    aliases: [lin_sgamut3cine, Input - Sony - Linear - S-Gamut3.Cine]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Sony S-Gamut3.cine colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.8467789693, -0.5259861230, -0.2105452114, 0.0000000000, -0.4441532629, 1.2594429028, 0.1493999729, 0.0000000000, 0.0408554212, 0.0156408893, 0.8682072487, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000]}
+
+  - !<ColorSpace> #Linear Venice S-Gamut3
+    name: Linear Venice S-Gamut3
+    aliases: [lin_venice_sgamut3, Input - Sony - Linear - Venice S-Gamut3]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Sony Venice S-Gamut3 (so called "camera native") colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.3902639751, -0.1355735343, -0.1706163892, 0.0000000000, -0.4977719313, 1.3287678225, 0.1325388483, 0.0000000000, 0.0320531907, -0.0204380261, 0.9090178003, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000]}
+
+  - !<ColorSpace> #Linear Venice S-Gamut3.Cine
+    name: Linear Venice S-Gamut3.Cine
+    aliases: [lin_venice_sgamut3cine, Input - Sony - Linear - Venice S-Gamut3.Cine]
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Sony Venice S-Gamut3.cine colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.8467790, -0.5259861, -0.2105452, 0, -0.4441533, 1.2594429, 0.1494000, 0, 0.0408554, 0.0156409, 0.8682072, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear D-Gamut
+    name: Linear D-Gamut
+    aliases: []
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear DJI D-Gamut colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.7257, -0.4314, -0.1917, 0, -0.6025, 1.3906, 0.1671, 0, -0.0156, 0.0905, 0.8489, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear F-Gamut
+    name: Linear F-Gamut
+    aliases: []
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear Fuji F-Gamut colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ I-D65}
+        - !<MatrixTransform> {matrix: [1.7166512, -0.3556708, -0.2533663, 0, -0.6666844, 1.6164812, 0.0157685, 0, 0.0176399, -0.0427706, 0.9421031, 0, 0, 0, 0, 1]}
+
+  - !<ColorSpace> #Linear ProTune
+    name: Linear ProTune
+    aliases: []
+    family: Camera Chromaticity
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Open Domain Linear GoPro ProTune colourspace
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CIE-XYZ E}
+        - !<MatrixTransform> {matrix: [2.2668965, -0.8316336, -0.2965422, 0, -0.3573378, 1.2433731, 0.0883890, 0, -0.2182344, 0.3441751, 0.7926550, 0, 0, 0, 0, 1]}
+
+#LOG Stuff
+
+  - !<ColorSpace> #DaVinci Intermidiate WideGamut Log
+    name: DaVinci Intermidiate WideGamut Log
+    aliases: [DaVinci Intermidiate WideGamut, davinci_intermediate_widegamut]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: DaVinci Wide Gamut Log used in Resolve with 18.25 stops of dynamic range.
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear DaVinci WideGamut}
+        - !<LogCameraTransform> {log_side_slope: 0.07329248, log_side_offset: 0.51304736, lin_side_offset: 0.0075, lin_side_break: 0.00262409, linear_slope: 10.44426855}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {log_side_slope: 0.07329248, log_side_offset: 0.51304736, lin_side_offset: 0.0075, lin_side_break: 0.00262409, linear_slope: 10.44426855, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear DaVinci WideGamut, direction: inverse}
+
+  - !<ColorSpace> #T-Log - E-Gamut
+    name: T-Log - E-Gamut
+    aliases: ["FilmLight: T-Log - E-Gamut"]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: FilmLights T-Log - E-Gamut grading space
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear E-Gamut I-D65}
+        - !<FileTransform> {src: TLog_2_Linear.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: TLog_2_Linear.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear E-Gamut I-D65, direction: inverse}
+
+  - !<ColorSpace> #T-Log - E-Gamut 2
+    name: T-Log - E-Gamut 2
+    aliases: ["FilmLight: T-Log : E-Gamut 2"]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: FilmLights T-Log - E-Gamut 2 grading space
+    isdata: false
+    allocation: uniform
+    to_scene_reference: !<GroupTransform>
+      children:   
+        - !<FileTransform> {src: FilmLight_TLog_EGamut2_2_FilmLight_Linear_EGamut2.cub, interpolation: linear}
+        - !<FileTransform> {src: FilmLight_TLog_EGamut2_2_FilmLight_Linear_EGamut2.spimtx, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear FilmLight E-Gamut 2, direction: inverse}
+
+  - !<ColorSpace> #T-LogeE - E-Gamut 2
+    name: T-LogeE - E-Gamut 2
+    aliases: [Filmlight - E-Gamut2 - T-LogE]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: |
+      Filmlight E-Gamut2 - T-LogE
+      Same as T-Log but upper range extended from 128 to 512.
+    isdata: false
+    allocation: uniform
+    to_scene_reference: !<GroupTransform>
+      children:   
+        - !<FileTransform> {src: oetf_filmlight_tloge_to_linear.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear FilmLight E-Gamut 2, direction: inverse}
+
+  - !<ColorSpace> #ACEScc
+    name: ACEScc
+    aliases: [ACES - ACEScc, acescc_ap1]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: ACEScc grading space
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1}
+        - !<BuiltinTransform> {style: ACEScc_to_ACES2065-1, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<BuiltinTransform> {style: ACEScc_to_ACES2065-1}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1, direction: inverse}
+
+  - !<ColorSpace> #ACEScct
+    name: ACEScct
+    aliases: [ACES - ACEScct, acescct_ap1]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: ACEScct grading space
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1}
+        - !<BuiltinTransform> {style: ACEScct_to_ACES2065-1, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<BuiltinTransform> {style: ACEScct_to_ACES2065-1}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1, direction: inverse}
+
+  - !<ColorSpace> #Bleached - Negative Print Display P3
+    name: Bleached - Negative Print Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Negative Print CDL to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Bleached - Negative Print Rec.1886
+    name: Bleached - Negative Print Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Negative Print CDL to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Bleached - Oxide Residue sRGB Display
+    name: Bleached - Oxide Residue sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Oxide Residue CDL stack to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [0.80, 0.96, 0.76], offset: [0, 0, 0], power: [1.06, 0.98, 1.32], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.10, 1.34, 1], sat: 1.12}
+        - !<CDLTransform> {slope: [1.06, 0.90, 1.36], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<CDLTransform> {slope: [1.54, 1.54, 1.54], offset: [0, 0, 0], power: [0.92, 0.92, 0.92], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Bleached - Oxide Residue Display P3
+    name: Bleached - Oxide Residue Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Oxide Residue CDL stack to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [0.80, 0.96, 0.76], offset: [0, 0, 0], power: [1.06, 0.98, 1.32], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.10, 1.34, 1], sat: 1.12}
+        - !<CDLTransform> {slope: [1.06, 0.90, 1.36], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<CDLTransform> {slope: [1.54, 1.54, 1.54], offset: [0, 0, 0], power: [0.92, 0.92, 0.92], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Bleached - Oxide Residue Rec.1886
+    name: Bleached - Oxide Residue Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Oxide Residue CDL stack to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [0.80, 0.96, 0.76], offset: [0, 0, 0], power: [1.06, 0.98, 1.32], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.10, 1.34, 1], sat: 1.12}
+        - !<CDLTransform> {slope: [1.06, 0.90, 1.36], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<CDLTransform> {slope: [1.54, 1.54, 1.54], offset: [0, 0, 0], power: [0.92, 0.92, 0.92], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Gentle Touch - Negative Print Display P3
+    name: Gentle Touch - Negative Print Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Negative Print CDL to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Gentle Touch - Negative Print Rec.1886
+    name: Gentle Touch - Negative Print Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Negative Print CDL to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Gentle Touch - Surreal Push sRGB Display
+    name: Gentle Touch - Surreal Push sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Surreal Push CDL stack to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.12, 1.08, 1.10], offset: [0, 0, 0], power: [1.10, 1.106, 1.08], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1.04, 1.04, 1.04], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.08, 1.12, 1.12], sat: 1.12}
+        - !<CDLTransform> {slope: [0.92, 0.88, 1.32], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Gentle Touch - Surreal Push Display P3
+    name: Gentle Touch - Surreal Push Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Surreal Push CDL stack to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.12, 1.08, 1.10], offset: [0, 0, 0], power: [1.10, 1.106, 1.08], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1.04, 1.04, 1.04], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.08, 1.12, 1.12], sat: 1.12}
+        - !<CDLTransform> {slope: [0.92, 0.88, 1.32], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Gentle Touch - Surreal Push Rec.1886
+    name: Gentle Touch - Surreal Push Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Surreal Push CDL stack to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.12, 1.08, 1.10], offset: [0, 0, 0], power: [1.10, 1.106, 1.08], sat: 1}
+        - !<CDLTransform> {slope: [1.16, 1.16, 1.16], offset: [0, 0, 0], power: [1.04, 1.04, 1.04], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.08, 1.12, 1.12], sat: 1.12}
+        - !<CDLTransform> {slope: [0.92, 0.88, 1.32], offset: [0, 0, 0], power: [1.10, 1.06, 1], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+  - !<ColorSpace> #Flawed Emulsion - Chemical Veil sRGB Display
+    name: Flawed Emulsion - Chemical Veil sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with low-key Chemical Veil grading to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform> {style: log, contrast: {rgb: [1.004, 0.998, 1.002], master: 1.070}, saturation: 1.015}
+        - !<GradingToneTransform> {style: log, blacks: {rgb: [1.002, 0.994, 1.008], master: 0.925, start: 0.28, width: 0.56}, highlights: {rgb: [1.010, 1.000, 0.994], master: 0.965, start: 0.25, pivot: 0.86}, whites: {rgb: [1.006, 1.001, 0.996], master: 0.978, start: 0.33, width: 0.52}, s_contrast: 1.050}
+        - !<GradingRGBCurveTransform> {style: log, red: {control_points: [0, 0, 0.16, 0.144, 0.48, 0.470, 0.74, 0.752, 1, 0.994]}, green: {control_points: [0, 0, 0.16, 0.142, 0.48, 0.466, 0.74, 0.736, 1, 0.988]}, blue: {control_points: [0, 0, 0.16, 0.154, 0.48, 0.480, 0.74, 0.730, 1, 0.986]}}
+        - !<CDLTransform> {slope: [1.008, 0.998, 1.002], offset: [0.0003, 0.0001, 0.0002], power: [1.003, 1.000, 0.998], sat: 1.015}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Chemical Veil Display P3
+    name: Flawed Emulsion - Chemical Veil Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with low-key Chemical Veil grading to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform> {style: log, contrast: {rgb: [1.004, 0.998, 1.002], master: 1.070}, saturation: 1.015}
+        - !<GradingToneTransform> {style: log, blacks: {rgb: [1.002, 0.994, 1.008], master: 0.925, start: 0.28, width: 0.56}, highlights: {rgb: [1.010, 1.000, 0.994], master: 0.965, start: 0.25, pivot: 0.86}, whites: {rgb: [1.006, 1.001, 0.996], master: 0.978, start: 0.33, width: 0.52}, s_contrast: 1.050}
+        - !<GradingRGBCurveTransform> {style: log, red: {control_points: [0, 0, 0.16, 0.144, 0.48, 0.470, 0.74, 0.752, 1, 0.994]}, green: {control_points: [0, 0, 0.16, 0.142, 0.48, 0.466, 0.74, 0.736, 1, 0.988]}, blue: {control_points: [0, 0, 0.16, 0.154, 0.48, 0.480, 0.74, 0.730, 1, 0.986]}}
+        - !<CDLTransform> {slope: [1.008, 0.998, 1.002], offset: [0.0003, 0.0001, 0.0002], power: [1.003, 1.000, 0.998], sat: 1.015}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Chemical Veil Rec.1886
+    name: Flawed Emulsion - Chemical Veil Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with low-key Chemical Veil grading to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform> {style: log, contrast: {rgb: [1.004, 0.998, 1.002], master: 1.070}, saturation: 1.015}
+        - !<GradingToneTransform> {style: log, blacks: {rgb: [1.002, 0.994, 1.008], master: 0.925, start: 0.28, width: 0.56}, highlights: {rgb: [1.010, 1.000, 0.994], master: 0.965, start: 0.25, pivot: 0.86}, whites: {rgb: [1.006, 1.001, 0.996], master: 0.978, start: 0.33, width: 0.52}, s_contrast: 1.050}
+        - !<GradingRGBCurveTransform> {style: log, red: {control_points: [0, 0, 0.16, 0.144, 0.48, 0.470, 0.74, 0.752, 1, 0.994]}, green: {control_points: [0, 0, 0.16, 0.142, 0.48, 0.466, 0.74, 0.736, 1, 0.988]}, blue: {control_points: [0, 0, 0.16, 0.154, 0.48, 0.480, 0.74, 0.730, 1, 0.986]}}
+        - !<CDLTransform> {slope: [1.008, 0.998, 1.002], offset: [0.0003, 0.0001, 0.0002], power: [1.003, 1.000, 0.998], sat: 1.015}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Spilled sRGB Display
+    name: Flawed Emulsion - Spilled sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with a linear density CDL followed by two log-space Spilled CDLs to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.66, 1.66, 1.66], offset: [0, 0, 0], power: [1.16, 1.16, 1.16], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<CDLTransform> {slope: [1.06, 0.96, 1.14], offset: [0, 0, 0], power: [1.08, 1.02, 1.26], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.12, 1.08, 1.12], sat: 1.12}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Spilled Display P3
+    name: Flawed Emulsion - Spilled Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with a linear density CDL followed by two log-space Spilled CDLs to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.66, 1.66, 1.66], offset: [0, 0, 0], power: [1.16, 1.16, 1.16], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<CDLTransform> {slope: [1.06, 0.96, 1.14], offset: [0, 0, 0], power: [1.08, 1.02, 1.26], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.12, 1.08, 1.12], sat: 1.12}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Spilled Rec.1886
+    name: Flawed Emulsion - Spilled Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with a linear density CDL followed by two log-space Spilled CDLs to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.66, 1.66, 1.66], offset: [0, 0, 0], power: [1.16, 1.16, 1.16], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<CDLTransform> {slope: [1.06, 0.96, 1.14], offset: [0, 0, 0], power: [1.08, 1.02, 1.26], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.12, 1.08, 1.12], sat: 1.12}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+  - !<ColorSpace> #2499DRT Log (2499)
+    name: 2499DRT Log (2499)
+    aliases: [Log, 2499DRT Log, 2499, 2499DRT 2499 Log]
+    family: Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Log, (2499)
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.709}
+        - !<MatrixTransform> {matrix: [0.56279692, 0.32353076, 0.11374766, 0.00000000, 0.07769616, 0.74961017, 0.17266308, 0.00000000, 0.06464207, 0.19200710, 0.74330971, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 1.00000000]}
+        - !<AllocationTransform> {allocation: lg2, vars: [-11, 6.64382,0.00048828]}
+        - !<FileTransform> {src: Log2_2499log.cube, interpolation: tetrahedral}
+
+#Camera Log Stuff
+
+  - !<ColorSpace> #ARRI LogC3
+    name: ARRI LogC3
+    aliases: ["ARRI LogC3 (EI800)", arri_logc3_ei800, Input - ARRI - V3 LogC (EI800) - Wide Gamut, logc3ei800_alexawide]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: ARRI LogC3 (EL800) log encoding
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ARRI Wide Gamut 3}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.247189638318671, log_side_offset: 0.385536998692443, lin_side_slope: 5.55555555555556, lin_side_offset: 0.0522722750251688, lin_side_break: 0.0105909904954696}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.247189638318671, log_side_offset: 0.385536998692443, lin_side_slope: 5.55555555555556, lin_side_offset: 0.0522722750251688, lin_side_break: 0.0105909904954696, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ARRI Wide Gamut 3, direction: inverse}
+
+  - !<ColorSpace> #ARRI LogC4
+    name: ARRI LogC4
+    aliases: [arri_logc4]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: ARRI ARRI LogC4 log encoding used in Alexa 35
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ARRI Wide Gamut 4}
+        - !<LogCameraTransform> {log_side_slope: 0.0647954196341293, log_side_offset: -0.295908392682586, lin_side_slope: 2231.82630906769, lin_side_offset: 64, lin_side_break: -0.0180569961199113}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {log_side_slope: 0.0647954196341293, log_side_offset: -0.295908392682586, lin_side_slope: 2231.82630906769, lin_side_offset: 64, lin_side_break: -0.0180569961199113, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ARRI Wide Gamut 4, direction: inverse}
+
+  - !<ColorSpace> #BMDFilm WideGamut Gen5 Log
+    name: BMDFilm WideGamut Gen5 Log
+    aliases: [bmdfilm_widegamut_gen5, BMDFilm WideGamut Gen5]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Black Magic Design widegamut gen 5 used by BlackMagic cameras
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BMD WideGamut Gen5}
+        - !<LogCameraTransform> {base: 2.71828182845905, log_side_slope: 0.0869287606549122, log_side_offset: 0.530013339229194, lin_side_offset: 0.00549407243225781, lin_side_break: 0.005}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 2.71828182845905, log_side_slope: 0.0869287606549122, log_side_offset: 0.530013339229194, lin_side_offset: 0.00549407243225781, lin_side_break: 0.005, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BMD WideGamut Gen5, direction: inverse}
+
+  - !<ColorSpace> #CanonLog2 CinemaGamut D55
+    name: CanonLog2 CinemaGamut D55
+    aliases: [canonlog2_cinemagamut_d55, Input - Canon - Canon-Log2 - Cinema Gamut Daylight, canonlog2_cgamutday]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: CanonLog2 CinemaGamut D55 Daylight
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CinemaGamut D55}
+        - !<MatrixTransform> {matrix: [0.9525523959, 0.0000000000, 0.0000936786, 0.0000000000, 0.3439664498, 0.7281660966, -0.0721325464, 0.0000000000, 0.0000000000, 0.0000000000, 1.0088251844, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000]} 
+        - !<BuiltinTransform> {style: CANON_CLOG2-CGAMUT_to_ACES2065-1, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<BuiltinTransform> {style: CANON_CLOG2-CGAMUT_to_ACES2065-1}
+        - !<MatrixTransform> {matrix: [0.9525523959, 0.0000000000, 0.0000936786, 0.0000000000, 0.3439664498, 0.7281660966, -0.0721325464, 0.0000000000, 0.0000000000, 0.0000000000, 1.0088251844, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000], direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear CinemaGamut D55, direction: inverse}
+
+  - !<ColorSpace> #CanonLog3 CinemaGamut D55
+    name: CanonLog3 CinemaGamut D55
+    aliases: [canonlog3_cinemagamut_d55, Input - Canon - Canon-Log3 - Cinema Gamut Daylight, canonlog3_cgamutday]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: CanonLog3 CinemaGamut D55 Daylight
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1}
+#        - !<MatrixTransform> {matrix: [0.7517177513, 0.1361661972, 0.1098089891, 0.0000000000, 0.0027518416, 1.1067485107, -0.1005322013, 0.0000000000, -0.0095916981, -0.2344128991, 1.3235352905, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000]}
+        - !<BuiltinTransform> {style: CANON_CLOG3-CGAMUT_to_ACES2065-1, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<BuiltinTransform> {style: CANON_CLOG3-CGAMUT_to_ACES2065-1}
+#        - !<MatrixTransform> {matrix: [0.7517177513, 0.1361661972, 0.1098089891, 0.0000000000, 0.0027518416, 1.1067485107, -0.1005322013, 0.0000000000, -0.0095916981, -0.2344128991, 1.3235352905, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000], direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: ACES2065-1, direction: inverse}
+
+  - !<ColorSpace> #V-Log V-Gamut
+    name: V-Log V-Gamut
+    aliases: [vlog_vgamut, Input - Panasonic - V-Log - V-Gamut]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Panasonic V-Log V-Gamut
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear V-Gamut}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.241514, log_side_offset: 0.598206, lin_side_offset: 0.00873, lin_side_break: 0.01}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.241514, log_side_offset: 0.598206, lin_side_offset: 0.00873, lin_side_break: 0.01, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear V-Gamut, direction: inverse}
+
+  - !<ColorSpace> #Log3G10 REDWideGamutRGB
+    name: Log3G10 REDWideGamutRGB
+    aliases: [log3g10_redwidegamutrgb, Input - RED - REDLog3G10 - REDWideGamutRGB, rl3g10_rwg]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: RED Log3G10 RedWideGamutRGB
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear REDWideGamutRGB}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.224282, lin_side_slope: 155.975327, lin_side_offset: 2.55975327, lin_side_break: -0.01}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.224282, lin_side_slope: 155.975327, lin_side_offset: 2.55975327, lin_side_break: -0.01, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear REDWideGamutRGB, direction: inverse}
+
+  - !<ColorSpace> #S-Log2 ITU 709 Matrix
+    name: S-Log2 ITU 709 Matrix
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log2 with ITU-709 Matrix optimized for 8bit Sony cameras
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Rec.709}
+        - !<FileTransform> {src: S-Log2_to_linear.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: S-Log2_to_linear.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Rec.709, direction: inverse}
+
+  - !<ColorSpace> #S-Log2 S-Gamut
+    name: S-Log2 S-Gamut
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log2 with (so called "camera native") S-Gamut
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut}
+        - !<FileTransform> {src: S-Log2_to_linear.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: S-Log2_to_linear.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut, direction: inverse}
+
+  - !<ColorSpace> #S-Log3 S-Gamut3
+    name: S-Log3 S-Gamut3
+    aliases: [slog3_sgamut3, Input - Sony - S-Log3 - S-Gamut3]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log3 S-Gamut3 (so called "camera native") for non Venice cameras
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut3}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut3, direction: inverse}
+
+  - !<ColorSpace> #S-Log3 S-Gamut3.Cine
+    name: S-Log3 S-Gamut3.Cine
+    aliases: [slog3_sgamut3.cine, Input - Sony - S-Log3 - S-Gamut3.cine]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log3 S-Gamut3.cine for non Venice
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut3.cine}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear S-Gamut3.cine, direction: inverse}
+
+  - !<ColorSpace> #S-Log3 Venice S-Gamut3
+    name: S-Log3 Venice S-Gamut3
+    aliases: [slog3_venice_sgamut3, Input - Sony - S-Log3 - Venice S-Gamut3]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log3 S-Gamut3 for Venice
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Venice S-Gamut3}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Venice S-Gamut3, direction: inverse}
+
+  - !<ColorSpace> #S-Log3 Venice S-Gamut3.Cine
+    name: S-Log3 Venice S-Gamut3.cine
+    aliases: [slog3_venice_sgamut3cine, Input - Sony - S-Log3 - Venice S-Gamut3.Cine, slog3_venice_sgamutcine]
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Sony S-Log3 S-Gamut3 for Venice
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Venice S-Gamut3.Cine}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.255620723362659, log_side_offset: 0.410557184750733, lin_side_slope: 5.26315789473684, lin_side_offset: 0.0526315789473684, lin_side_break: 0.01125, linear_slope: 6.62194371177582, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear Venice S-Gamut3.Cine, direction: inverse}
+
+  - !<ColorSpace> #Apple Log
+    name: Apple Log
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Apple Log Format introduced with iPhone15
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.2020 I-D65}
+        - !<FileTransform> {src: Apple_Log_EOTF.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: Apple_Log_EOTF.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.2020 I-D65, direction: inverse}
+
+  - !<ColorSpace> #F-Log F-Gamut
+    name: F-Log F-Gamut
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Fuji's F-Log F-Gamut
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear F-Gamut}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.344676, log_side_offset: 0.790453, lin_side_slope: 0.555556, lin_side_offset: 0.009468, lin_side_break: 0.00089}
+
+  - !<ColorSpace> #F-Log2 F-Gamut
+    name: F-Log2 F-Gamut
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Fuji's F-Log2 F-Gamut
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear F-Gamut}
+        - !<LogCameraTransform> {base: 10, log_side_slope: 0.245281, log_side_offset: 0.384316, lin_side_slope: 5.555556, lin_side_offset: 0.064829, lin_side_break: 0.000889}
+
+  - !<ColorSpace> #D-Log D-Gamut
+    name: D-Log D-Gamut
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: DJI's X5, X7, X9 camera D-Log D-Gamut
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear D-Gamut}
+        - !<FileTransform> {src: D_Log_EOTF.spi1d, interpolation: linear, direction: inverse}   
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: D_Log_EOTF.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear D-Gamut, direction: inverse}
+
+  - !<ColorSpace> #ProTune Log
+    name: ProTune Log
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: GoPro's protune log format
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ProTune}
+        - !<FileTransform> {src: Protune_Flat_to_linear.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: Protune_Flat_to_linear.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear ProTune, direction: inverse}
+
+  - !<ColorSpace> #N-Log
+    name: N-Log
+    aliases: []
+    family: Camera Log Encodings
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Nikons N-Log with bt.2020 primaries
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.2020 I-D65}
+        - !<FileTransform> {src: N_Log_Curve_EOTF.spi1d, interpolation: linear, direction: inverse}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: N_Log_Curve_EOTF.spi1d, interpolation: linear}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.2020 I-D65, direction: inverse}
+
+
+#Image Formation Stuff
+
+  - !<ColorSpace> #2499DRT Base sRGB
+    name: 2499DRT Base sRGB
+    aliases: [2499DRT Base]
+    family: Imagery sRGB
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Base Image Encoding by Juan Pablo Zambrano
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: 2499DRT Log (2499)}
+        - !<FileTransform> {src: 2499log_to_Base.cube, interpolation: tetrahedral}
+        - !<ExponentTransform> {value: 0.9, direction: forward}
+
+  - !<ColorSpace> #2499DRT Base Rec.1886
+    name: 2499DRT Base Rec.1886 
+    aliases: [2499DRT Base BT.1886]
+    family: Imagery Rec.1886
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Base Image Encoding Juan Pablo Zambrano
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: 2499DRT Log (2499)}
+        - !<FileTransform> {src: 2499log_to_Base.cube, interpolation: tetrahedral}
+        - !<ExponentTransform> {value: 0.9, direction: forward}
+        - !<ColorSpaceTransform> {src: Rec709 EOTF 2.2, dst: Rec.1886}
+
+  - !<ColorSpace> #2499DRT Base Display P3
+    name: 2499DRT Base Display P3
+    family: Imagery Display P3
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Base Image Encoding for Display P3 Displays Juan Pablo Zambrano
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: 2499DRT Log (2499)}
+        - !<FileTransform> {src: 2499log_to_P3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #2499DRT Base AdobeRGB
+    name: 2499DRT Base AdobeRGB
+    family: Imagery AdobeRGB
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Base Image Encoding
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: 2499DRT Log (2499)}
+        - !<FileTransform> {src: 2499log_to_Base.cube, interpolation: tetrahedral}
+        - !<ExponentTransform> {value: 0.9, direction: forward}
+        - !<ColorSpaceTransform> {src: Rec709 EOTF 2.2, dst: AdobeRGB EOTF 2.2}
+
+  - !<ColorSpace> #2499DRT Base Rec.2020
+    name: 2499DRT Base Rec.2020
+    family: Imagery Rec.2020
+    equalitygroup: ""
+    bitdepth: unknown
+    description: 2499DRT Base Image Encoding
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: 2499DRT Log (2499)}
+        - !<FileTransform> {src: 2499log_to_Base.cube, interpolation: tetrahedral}
+        - !<ExponentTransform> {value: 0.9, direction: forward}
+        - !<ColorSpaceTransform> {src: Rec709 EOTF 2.2, dst: Rec.2020}
+
+#OpenDRT v1.1
+
+
+  - !<ColorSpace> #OpenDRT Standard sRGB Display
+    name: OpenDRT Standard sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Standard baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Standard__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Bleached sRGB Display
+    name: Bleached sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Gentle Touch sRGB Display
+    name: Gentle Touch sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Bleached - Negative Print sRGB Display
+    name: Bleached - Negative Print sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached with Negative Print CDL, baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Gentle Touch - Negative Print sRGB Display
+    name: Gentle Touch - Negative Print sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch with Negative Print CDL, baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<CDLTransform> {slope: [1.28, 1.28, 1.28], offset: [0, 0, 0], power: [1.18, 1.18, 1.18], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0.003676, 0, 0.0055], power: [1, 1, 1], sat: 1}
+        - !<CDLTransform> {slope: [1, 1, 1], offset: [0, 0, 0], power: [1.14, 1.08, 1.16], sat: 1}
+        - !<CDLTransform> {slope: [0.92, 0.92, 0.92], offset: [0, 0, 0], power: [0.94, 0.94, 0.94], sat: 1}
+        - !<ColorSpaceTransform> {src: Linear Rec.2020, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Flawed Emulsion sRGB Display
+    name: Flawed Emulsion sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion 2 sRGB Display
+    name: Flawed Emulsion 2 sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion 2 baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion2__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Shifted Crisp sRGB Display
+    name: Shifted Crisp sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Shifted Crisp baked from FilmLight E-Gamut2 T-LogE to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_ShiftedCrisp__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #OpenDRT Standard Display P3
+    name: OpenDRT Standard Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Standard baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Standard__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Bleached Display P3
+    name: Bleached Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Gentle Touch Display P3
+    name: Gentle Touch Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Flawed Emulsion Display P3
+    name: Flawed Emulsion Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion 2 Display P3
+    name: Flawed Emulsion 2 Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion 2 baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion2__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Shifted Crisp Display P3
+    name: Shifted Crisp Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Shifted Crisp baked from FilmLight E-Gamut2 T-LogE to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_ShiftedCrisp__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #OpenDRT Standard Rec.1886
+    name: OpenDRT Standard Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Standard baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Standard__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Bleached Rec.1886
+    name: Bleached Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Bleached baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_Bleached__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Gentle Touch Rec.1886
+    name: Gentle Touch Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Gentle Touch baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_GentleTouch__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Flawed Emulsion Rec.1886
+    name: Flawed Emulsion Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion 2 Rec.1886
+    name: Flawed Emulsion 2 Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion 2 baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion2__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Shifted Crisp Rec.1886
+    name: Shifted Crisp Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Shifted Crisp baked from FilmLight E-Gamut2 T-LogE to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<FileTransform> {src: OpenDRT_v1.1_ShiftedCrisp__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+
+  - !<ColorSpace> #Flawed Emulsion - Mineral Fade sRGB Display
+    name: Flawed Emulsion - Mineral Fade sRGB Display
+    aliases: []
+    family: Imagery sRGB
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with oxidized aqua shadows and aged warm highlights to sRGB Display.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1.000, 0.999, 1.003], master: 1.030}
+          saturation: 1.015
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [0.993, 1.009, 1.006], master: 0.985, start: 0.28, width: 0.48}
+          highlights: {rgb: [1.012, 1.005, 0.992], master: 0.982, start: 0.28, pivot: 0.84}
+          whites:     {rgb: [1.018, 1.008, 0.990], master: 0.990, start: 0.30, width: 0.44}
+          s_contrast: 1.025
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.16, 0.155, 0.46, 0.455, 0.74, 0.760, 1, 0.998]}
+          green: {control_points: [0, 0, 0.16, 0.168, 0.46, 0.472, 0.74, 0.751, 1, 0.999]}
+          blue:  {control_points: [0, 0, 0.16, 0.166, 0.46, 0.474, 0.74, 0.746, 1, 0.996]}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_srgb-display.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Mineral Fade Display P3
+    name: Flawed Emulsion - Mineral Fade Display P3
+    aliases: []
+    family: Imagery Display P3
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with oxidized aqua shadows and aged warm highlights to Display P3.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1.000, 0.999, 1.003], master: 1.030}
+          saturation: 1.015
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [0.993, 1.009, 1.006], master: 0.985, start: 0.28, width: 0.48}
+          highlights: {rgb: [1.012, 1.005, 0.992], master: 0.982, start: 0.28, pivot: 0.84}
+          whites:     {rgb: [1.018, 1.008, 0.990], master: 0.990, start: 0.30, width: 0.44}
+          s_contrast: 1.025
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.16, 0.155, 0.46, 0.455, 0.74, 0.760, 1, 0.998]}
+          green: {control_points: [0, 0, 0.16, 0.168, 0.46, 0.472, 0.74, 0.751, 1, 0.999]}
+          blue:  {control_points: [0, 0, 0.16, 0.166, 0.46, 0.474, 0.74, 0.746, 1, 0.996]}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_display-p3.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #Flawed Emulsion - Mineral Fade Rec.1886
+    name: Flawed Emulsion - Mineral Fade Rec.1886
+    aliases: []
+    family: Imagery Rec.1886
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      OpenDRT v1.1 Flawed Emulsion with oxidized aqua shadows and aged warm highlights to Rec.1886.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: T-LogeE - E-Gamut 2}
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1.000, 0.999, 1.003], master: 1.030}
+          saturation: 1.015
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [0.993, 1.009, 1.006], master: 0.985, start: 0.28, width: 0.48}
+          highlights: {rgb: [1.012, 1.005, 0.992], master: 0.982, start: 0.28, pivot: 0.84}
+          whites:     {rgb: [1.018, 1.008, 0.990], master: 0.990, start: 0.30, width: 0.44}
+          s_contrast: 1.025
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.16, 0.155, 0.46, 0.455, 0.74, 0.760, 1, 0.998]}
+          green: {control_points: [0, 0, 0.16, 0.168, 0.46, 0.472, 0.74, 0.751, 1, 0.999]}
+          blue:  {control_points: [0, 0, 0.16, 0.166, 0.46, 0.474, 0.74, 0.746, 1, 0.996]}
+        - !<FileTransform> {src: OpenDRT_v1.1_FlawedEmulsion__filmlight-egamut2-tloge_to_rec1886.cube, interpolation: tetrahedral}
+
+  - !<ColorSpace> #sRGB - Texture
+    name: sRGB - Texture
+    aliases: [sRGB Encoded Rec.709 (sRGB), srgb_encoded_rec709_srgb, srgb_texture, srgb_rec709_scene, Utility - sRGB - Texture, Input - Generic - sRGB - Texture, srgb_tx]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      sRGB IEC 61966-2-1 compound (piece-wise) encoding
+    isdata: false
+    categories: [file-io, texture]
+    encoding: sdr-video
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.709}
+        - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace> #sRGB
+    name: sRGB
+    aliases: [EOTF 2.2, Rec709 EOTF 2.2, Pure 2.2 Gamma, "sRGB Display: 2.2 Gamma - Rec.709", sRGB I-D65, srgb_display, sRGB - Display, Gamma 2.2 Encoded Rec.709, g22_encoded_rec709, g22_rec709, Utility - Gamma 2.2 - Rec.709 - Texture, Gamma 2.2 Rec.709 - Texture, g22_rec709_tx, g22_rec709_scene, g22_rec709 - Texture, sRGB Legacy, Legacy sRGB]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Pure 2.2 power function Rec 709 / sRGB 
+    isdata: false
+    categories: [file-io, texture]
+    encoding: sdr-video
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.709}
+        - !<ExponentTransform> {value: 2.2, direction: inverse}
+
+  - !<ColorSpace> #sRGB 2.2 I-E
+    name: sRGB 2.2 I-E
+    aliases: []
+    family: Display
+    equalitygroup: ""
+    bitdepth: unknown
+    description: sRGB IEC 61966-2-1 2.2 Exponent Reference EOTF Display with I-E white point
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.709 I-E}
+        - !<ExponentTransform> {value: 2.2, direction: inverse}
+
+  - !<ColorSpace> #Display P3 2.2 I-E
+    name: Display P3 2.2 I-E
+    aliases: []
+    family: Display
+    equalitygroup: ""
+    bitdepth: unknown
+    description: Display P3 2.2 Exponent EOTF Display with I-E white point
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear DCI-P3 I-E}
+        - !<ExponentTransform> {value: 2.2, direction: inverse}
+
+  - !<ColorSpace> #Rec.1886
+    name: Rec.1886
+    aliases: [BT.1886, BT.1886 2.4, BT.1886 EOTF, BT.1886 I-D65, Rec.1886 / Rec.709 Video - Display, rec1886_rec709_video_display, Rec.1886 Rec.709 - Display, rec1886_rec709_display, "Rec1886: 2.4 Gamma - Rec.709"]
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      BT.1886 2.4 Exponent EOTF Display, commonly used for TVs
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.709}
+        - !<ExponentTransform> {value: 2.4, direction: inverse}
+
+  - !<ColorSpace> #Display P3 Legacy
+    name: Display P3 Legacy
+    aliases: [Legacy Display P3]
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Apple's Display P3 with sRGB compound (piece-wise) encoding transfer function, common on Mac devices
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear DCI-P3 D65}
+        - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace> #sRGB Encoded P3-D65
+    name: sRGB Encoded P3-D65
+    aliases: [srgb_encoded_p3d65, srgb_p3d65, srgb_displayp3, srgb_p3d65_scene, sRGB Encoded P3-D65 - Texture, srgb_encoded_p3d65_tx]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Apple's Display P3 primaries with sRGB compound (piece-wise) encoding transfer function
+    isdata: false
+    categories: [file-io, texture]
+    encoding: sdr-video
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear DCI-P3 D65}
+        - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace> #Display P3 EOTF 2.2
+    name: Display P3 EOTF 2.2
+    aliases: [Display P3, Display P3 2.2, Display P3 I-D65, P3-D65 - Display, p3_d65_display, p3d65_display, AppleP3 sRGB OETF]
+    family: Utility
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      Apple's Display P3 with Pure 2.2 encoding transfer function, common on Mac devices
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear DCI-P3 D65}
+        - !<ExponentTransform> {value: 2.2, direction: inverse}
+
+  - !<ColorSpace> #AdobeRGB Legacy
+    name: AdobeRGB Legacy
+    aliases: [AdobeRGB Piecewise 2.2, Legacy AdobeRGB]
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      AdobeRGB 1998 piece-wise function
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Adobe RGB (1998)}
+        - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace> #AdobeRGB EOTF 2.2
+    name: AdobeRGB EOTF 2.2
+    aliases: []
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      AdobeRGB 1998 2.2 pure EOTF.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Adobe RGB (1998)}
+        - !<ExponentTransform> {value: 2.2, direction: inverse}
+
+  - !<ColorSpace> #DCI-P3 2.6
+    name: DCI-P3 2.6
+    aliases: []
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      DCI-P3 cinema standard display view.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear DCI-P3 DCI}
+        - !<ExponentTransform> {value: 2.6, direction: inverse}
+
+  - !<ColorSpace> #DCI-P3 D65 2.6
+    name: DCI-P3 D65 2.6
+    aliases: []
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      DCI-P3 D65 standard display view.
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear DCI-P3 D65}
+        - !<ExponentTransform> {value: 2.6, direction: inverse}
+
+  - !<ColorSpace> #Rec.2020
+    name: Rec.2020
+    aliases: [BT.2020, BT.2020 2.4, BT.2020 I-D65, Rec.1886 / Rec.2020 Video - Display, rec1886_rec2020_video_display, Rec.1886 Rec.2020 - Display, rec1886_rec2020_display, "Rec1886: 2.4 Gamma - Rec.2020"]
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      BT.2020 2.4 Exponent EOTF Display
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<ExponentTransform> {value: 2.4, direction: inverse}
+
+  - !<ColorSpace> #Rec.2100-PQ
+    name: Rec.2100-PQ
+    aliases: [Rec.2100-PQ - Display, rec2100_pq_display, BT2100, ST-2084, Rec.2100]
+    family: Display
+    equalitygroup:
+    bitdepth: 32f
+    description: |
+      BT.2100 PQ Exponent Display
+    isdata: false
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084}
+
+  - !<ColorSpace> #Rec.2100-PQ 1000 nits limited
+    name: Rec.2100-PQ 1000 nits limited
+    aliases: [Rec.2100(1000nit Limit)]
+    family: Display
+    equalitygroup: ""
+    bitdepth: 32f
+    description: BT.2100-ST.2084 1000 nits limited display
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020}
+        - !<RangeTransform> {max_in_value: 10, max_out_value: 10}
+        - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084}
+    to_scene_reference: !<GroupTransform>
+      children:
+        - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084, direction: inverse}
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear Rec.2020, direction: inverse}
+
+  - !<ColorSpace> #Rec.2100-HLG
+    name: Rec.2100-HLG
+    aliases: [rec2100_hlg_display, Rec.2100-HLG - Display, BT.2100-HLG]
+    family: Display
+    equalitygroup: ""
+    bitdepth: 32f
+    description: BT.2100-HLG 1000 nit Display
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ E, dst: Linear CIE-XYZ D65}
+        - !<BuiltinTransform> {style: DISPLAY - CIE-XYZ-D65_to_REC.2100-HLG-1000nit}
+
+  - !<ColorSpace> #BT.2020 2.4 I-E
+    name: BT.2020 2.4 I-E
+    aliases: []
+    family: Display
+    equalitygroup: ""
+    bitdepth: unknown
+    description: BT.2020 2.4 Exponent EOTF Display with I-E white point
+    isdata: false
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      children:
+        - !<ColorSpaceTransform> {src: Linear CIE-XYZ I-E, dst: Linear BT.2020 I-E}
+        - !<ExponentTransform> {value: 2.4, direction: inverse}
+
+#Utility Stuff
+
+  - !<ColorSpace> #Raw / Non-Color
+    name: Raw
+    aliases: [Generic Data, Non-Colour Data, Non-Color, raw, Utility - Raw, none, Passthrough]
+    family: Utility
+    description: |
+        Generic data that is not color, will not apply any color transform (e.g. normal maps)
+    equalitygroup:
+    bitdepth: 32f
+    isdata: true
+
+looks:
+
+  - !<Look> #JP2499DRT - Editorial Split
+    name: JP2499DRT - Editorial Split
+    process_space: 2499DRT Log (2499)
+    description: Editorial warm-high / cool-low split with restrained magnitude.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.06}
+          saturation: 0.92
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [1, 1, 1], master: 1.006, start: 0.33, width: 0.44}
+          highlights: {rgb: [1, 1, 1], master: 0.992, start: 0.27, pivot: 0.91}
+          whites:     {rgb: [1, 1, 1], master: 1.000, start: 0.33, width: 0.44}
+          s_contrast: 1.01
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.28, 0.275, 1, 1]}
+          blue: {control_points: [0, 0, 0.28, 0.285, 1, 1]}
+          green: {control_points: [0, 0, 0.28, 0.281, 1, 1]}
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.78, 0.784, 1, 1]}
+          blue: {control_points: [0, 0, 0.78, 0.776, 1, 1]}
+  - !<Look> #JP2499DRT - Hard Contrast
+    name: JP2499DRT - Hard Contrast
+    process_space: 2499DRT Log (2499)
+    description: Stronger AgX editorial contrast with deeper blacks, moderated chroma, and clean highlight rolloff.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.18}
+          saturation: 0.76
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.045, start: 0.32, width: 0.40}
+          highlights: {rgb: [1, 1, 1], master: 0.986, start: 0.27, pivot: 0.90}
+          whites: {rgb: [1, 1, 1], master: 0.992, start: 0.33, width: 0.42}
+          s_contrast: 1.04
+        - !<GradingRGBCurveTransform>
+          style: log
+          master: {control_points: [0, 0, 0.12, 0.075, 0.42, 0.375, 0.82, 0.835, 1, 1]}
+
+  - !<Look> #JP2499DRT - Photochemical
+    name: JP2499DRT - Photochemical
+    process_space: 2499DRT Log (2499)
+    description: Film-medium shaping with channel crossover, softer shoulder, print-floor contamination, and non-neutral density.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.08}
+          saturation: 0.86
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [1, 1, 1], master: 0.972, start: 0.34, width: 0.52}
+          highlights: {rgb: [1, 1, 1], master: 0.962, start: 0.27, pivot: 0.87}
+          whites:     {rgb: [1, 1, 1], master: 0.982, start: 0.34, width: 0.52}
+          s_contrast: 1.00
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.20, 0.193, 0.72, 0.748, 1, 0.995]}
+          green: {control_points: [0, 0, 0.20, 0.202, 0.72, 0.718, 1, 0.997]}
+          blue:  {control_points: [0, 0, 0.20, 0.212, 0.72, 0.688, 1, 1]}
+        - !<CDLTransform>
+          {slope: [1.010, 1.000, 0.988], offset: [0.0015, 0.0005, 0.0025], power: [0.986, 1.000, 1.020], sat: 0.94}
+  - !<Look> #JP2499DRT - Chemical Drift
+    name: JP2499DRT - Chemical Drift
+    process_space: 2499DRT Log (2499)
+    description: Broken photochemical drift with dirty yellow-green lows, weak cyan-blue whites, and compressed shoulder.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.00}
+          saturation: 0.78
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [1, 1, 1], master: 0.945, start: 0.33, width: 0.54}
+          highlights: {rgb: [1, 1, 1], master: 0.952, start: 0.25, pivot: 0.86}
+          whites:     {rgb: [1, 1, 1], master: 0.970, start: 0.33, width: 0.54}
+          s_contrast: 0.98
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.16, 0.182, 0.68, 0.690, 1, 0.986]}
+          green: {control_points: [0, 0, 0.16, 0.176, 0.68, 0.708, 1, 0.992]}
+          blue:  {control_points: [0, 0, 0.16, 0.158, 0.68, 0.732, 1, 1]}
+        - !<CDLTransform>
+          {slope: [1.014, 1.000, 0.978], offset: [0.0030, 0.0020, 0.0040], power: [1.028, 0.996, 0.970], sat: 0.90}
+  - !<Look> #JP2499DRT - Tarnished Print
+    name: JP2499DRT - Tarnished Print
+    process_space: 2499DRT Log (2499)
+    description: Print-density inspired compression with richer blacks, restrained saturation, and mild channel separation.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1.02, 1.00, 0.98], master: 1.18}
+          saturation: 0.48
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.044, start: 0.31, width: 0.41}
+          highlights: {rgb: [1, 1, 1], master: 0.932, start: 0.24, pivot: 0.86}
+          whites: {rgb: [1, 1, 1], master: 0.966, start: 0.32, width: 0.46}
+          s_contrast: 1.03
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.16, 0.150, 0.42, 0.404, 0.68, 0.692, 1, 0.990]}
+          green: {control_points: [0, 0, 0.16, 0.158, 0.42, 0.418, 0.68, 0.674, 1, 0.992]}
+          blue: {control_points: [0, 0, 0.16, 0.168, 0.42, 0.410, 0.68, 0.648, 1, 0.984]}
+        - !<CDLTransform> {slope: [1.004, 0.998, 0.982], offset: [0.0010, 0.0006, 0.0014], power: [1.020, 1.018, 1.030], sat: 0.82}
+
+
+
+  - !<Look> #JP2499DRT - Graphite Matte
+    name: JP2499DRT - Graphite Matte
+    process_space: 2499DRT Log (2499)
+    description: Dry matte-chalk rendering with reduced chroma and softened black body.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 0.99}
+          saturation: 0.66
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 0.920, start: 0.33, width: 0.50}
+          highlights: {rgb: [1, 1, 1], master: 0.972, start: 0.27, pivot: 0.89}
+          whites: {rgb: [1, 1, 1], master: 0.986, start: 0.33, width: 0.50}
+          s_contrast: 0.99
+        - !<GradingRGBCurveTransform>
+          style: log
+          master: {control_points: [0, 0, 0.40, 0.390, 0.78, 0.784, 1, 1]}
+        - !<CDLTransform> {slope: [1.000, 1.000, 1.000], offset: [0.0025, 0.0025, 0.0025], power: [1.015, 1.015, 1.015], sat: 0.93}
+  - !<Look> #JP2499DRT - Soot
+    name: JP2499DRT - Soot
+    process_space: 2499DRT Log (2499)
+    description: Near-monochrome charcoal response with readable deep blacks and tiny warm accents.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.13}
+          saturation: 0.10
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.034, start: 0.31, width: 0.42}
+          highlights: {rgb: [1, 1, 1], master: 0.978, start: 0.28, pivot: 0.90}
+          whites: {rgb: [1, 1, 1], master: 0.992, start: 0.34, width: 0.44}
+          s_contrast: 1.01
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.18, 0.174, 0.52, 0.520, 0.80, 0.808, 1, 0.998]}
+          green: {control_points: [0, 0, 0.18, 0.180, 0.52, 0.516, 0.80, 0.798, 1, 0.996]}
+          blue: {control_points: [0, 0, 0.18, 0.184, 0.52, 0.508, 0.80, 0.784, 1, 0.990]}
+        - !<CDLTransform> {slope: [1.002, 1.000, 0.992], offset: [0.0002, 0.0002, 0.0004], power: [1.012, 1.014, 1.020], sat: 0.70}
+  - !<Look> #JP2499DRT - Carbon Plate
+    name: JP2499DRT - Carbon Plate
+    process_space: 2499DRT Log (2499)
+    description: Dark editorial print body with velvet blacks, compressed mids, restrained chroma, and soft highlight rolloff.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.10}
+          saturation: 0.82
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.010, start: 0.33, width: 0.43}
+          highlights: {rgb: [1, 1, 1], master: 0.988, start: 0.27, pivot: 0.90}
+          whites: {rgb: [1, 1, 1], master: 0.995, start: 0.33, width: 0.43}
+          s_contrast: 1.02
+        - !<GradingRGBCurveTransform>
+          style: log
+          master: {control_points: [0, 0, 0.45, 0.395, 1, 1]}
+  - !<Look> #JP2499DRT - Carbon Black
+    name: JP2499DRT - Carbon Black
+    process_space: 2499DRT Log (2499)
+    description: Near-black object-photo rendering with a preserved low-mid read band and restrained chroma.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.13}
+          saturation: 0.58
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.030, start: 0.32, width: 0.40}
+          highlights: {rgb: [1, 1, 1], master: 0.985, start: 0.27, pivot: 0.90}
+          whites: {rgb: [1, 1, 1], master: 0.992, start: 0.32, width: 0.40}
+          s_contrast: 1.03
+        - !<GradingRGBCurveTransform>
+          style: log
+          master: {control_points: [0, 0, 0.10, 0.055, 0.22, 0.185, 1, 1]}
+
+  - !<Look> #JP2499DRT - Blue Carbon Print
+    name: JP2499DRT - Blue Carbon Print
+    process_space: 2499DRT Log (2499)
+    description: Cool blue-black print-density bias with deeper lower mids, neutral highlights, and restrained chroma.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [0.99, 1.00, 1.01], master: 1.08}
+          saturation: 0.54
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.028, start: 0.31, width: 0.43}
+          highlights: {rgb: [1, 1, 1], master: 0.970, start: 0.26, pivot: 0.88}
+          whites: {rgb: [1, 1, 1], master: 0.988, start: 0.34, width: 0.45}
+          s_contrast: 1.02
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.16, 0.150, 0.42, 0.408, 0.74, 0.738, 1, 0.998]}
+          green: {control_points: [0, 0, 0.16, 0.158, 0.42, 0.416, 0.74, 0.740, 1, 0.999]}
+          blue: {control_points: [0, 0, 0.16, 0.172, 0.42, 0.430, 0.74, 0.742, 1, 0.999]}
+  - !<Look> #JP2499DRT - Funeral Bronze
+    name: JP2499DRT - Funeral Bronze
+    process_space: 2499DRT Log (2499)
+    description: Dense ceremonial low-key bronze with cold-neutral shadows and suppressed orange texture response.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [0.99, 1.00, 1.015], master: 1.10}
+          saturation: 0.46
+        - !<GradingToneTransform>
+          style: log
+          blacks: {rgb: [1, 1, 1], master: 1.018, start: 0.32, width: 0.44}
+          highlights: {rgb: [1, 1, 1], master: 0.986, start: 0.27, pivot: 0.90}
+          whites: {rgb: [1, 1, 1], master: 0.996, start: 0.34, width: 0.46}
+          s_contrast: 1.01
+        - !<GradingRGBCurveTransform>
+          style: log
+          red: {control_points: [0, 0, 0.18, 0.174, 0.48, 0.480, 0.74, 0.746, 1, 0.998]}
+          green: {control_points: [0, 0, 0.18, 0.180, 0.48, 0.484, 0.74, 0.742, 1, 0.996]}
+          blue: {control_points: [0, 0, 0.18, 0.184, 0.48, 0.476, 0.74, 0.734, 1, 0.992]}
+        - !<CDLTransform> {slope: [1.003, 0.999, 0.991], offset: [0.0000, 0.0002, 0.0006], power: [1.012, 1.006, 1.016], sat: 0.86}
+
+  - !<Look> #JP2499DRT - Phoenix Drift
+    name: JP2499DRT - Phoenix Drift
+    process_space: 2499DRT Log (2499)
+    description: Hot yellow-red highs, cyan-blue shadow pollution, weak neutrality, contaminated floor, and obvious medium character.
+    transform: !<GroupTransform>
+      children:
+        - !<GradingPrimaryTransform>
+          style: log
+          contrast: {rgb: [1, 1, 1], master: 1.03}
+          saturation: 0.88
+        - !<GradingToneTransform>
+          style: log
+          blacks:     {rgb: [1, 1, 1], master: 0.948, start: 0.34, width: 0.54}
+          highlights: {rgb: [1, 1, 1], master: 0.958, start: 0.25, pivot: 0.86}
+          whites:     {rgb: [1, 1, 1], master: 0.974, start: 0.34, width: 0.54}
+          s_contrast: 0.99
+        - !<GradingRGBCurveTransform>
+          style: log
+          red:   {control_points: [0, 0, 0.16, 0.170, 0.70, 0.724, 1, 1]}
+          green: {control_points: [0, 0, 0.16, 0.168, 0.70, 0.706, 1, 0.992]}
+          blue:  {control_points: [0, 0, 0.16, 0.150, 0.70, 0.742, 1, 0.984]}
+        - !<CDLTransform>
+          {slope: [1.026, 1.006, 0.964], offset: [0.0040, 0.0020, 0.0060], power: [1.018, 0.996, 0.956], sat: 0.96}
+  - !<Look> #JP2499DRT - Power Purity Boost 1
+    name: JP2499DRT - Power Purity Boost 1
+    process_space: Linear Rec.709
+    description: A nicked idea from a beloved appk
+    transform: !<CDLTransform> {offset: [0.001, 0.001, 0.001], power: [1.35, 1.35, 1.35], slope: [1.56, 1.56, 1.56], sat: 1.000}
+  - !<Look> #JP2499DRT - Power Purity Boost 2
+    name: JP2499DRT - Power Purity Boost 2
+    process_space: Linear Rec.709
+    description: A nicked idea from a beloved appk
+    transform: !<CDLTransform> {offset: [0.002, 0.002, 0.002], power: [1.35, 1.35, 1.35], slope: [1.56, 1.56, 1.56], sat: 1.105}
+  - !<Look> #JP2499DRT - Power Purity Boost 3
+    name: JP2499DRT - Power Purity Boost 3
+    process_space: Linear Rec.709
+    description: A nicked idea from a beloved appk
+    transform: !<CDLTransform> {offset: [0.005, 0.005, 0.005], power: [1.45, 1.45, 1.45], slope: [1.6195, 1.6195, 1.6195], sat: 1.150}
+  - !<Look> #JP2499DRT - Power Purity Boost 4
+    name: JP2499DRT - Power Purity Boost 4
+    process_space: Linear Rec.709
+    description: A nicked idea from a beloved appk
+    transform: !<CDLTransform> {offset: [0.006, 0.006, 0.006], power: [1.40, 1.40, 1.40], slope: [1.545, 1.545, 1.545], sat: 1.320}
+  - !<Look> #JP2499DRT - BnWX
+    name: JP2499DRT - BnWX
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-BnWX.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - ClassicNegative
+    name: JP2499DRT - ClassicNegative
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-ClassicNegative.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - ClassicCinemaNegative
+    name: JP2499DRT - ClassicCinemaNegative
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-ClassicCinemaNegative.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - ClassicReversal
+    name: JP2499DRT - ClassicReversal
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-ClassicReversal.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - CrazyNegative
+    name: JP2499DRT - CrazyNegative
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-CrazyNegative.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - InstantFilm
+    name: JP2499DRT - InstantFilm
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-InstantFilm.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - PrintV1
+    name: JP2499DRT - PrintV1
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-PrintV1.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - PrintV2
+    name: JP2499DRT - PrintV2
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-PrintV2.cube, interpolation: linear}
+  - !<Look> #JP2499DRT - PrintV3
+    name: JP2499DRT - PrintV3
+    process_space: 2499DRT Log (2499)
+    transform: !<GroupTransform>
+      children:
+        - !<FileTransform> {src: STP-2399Log-PrintV3.cube, interpolation: linear}
