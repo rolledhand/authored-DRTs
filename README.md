@@ -1,6 +1,6 @@
 # authored-DRTs
 
-Authored OCIO display rendering views built around OpenDRT v1.1, with a lean set of supporting camera/log spaces and custom JP2499DRT looks.
+Authored OCIO display-rendering families built around OpenDRT v1.1 and JP2499DRT, with a lean set of supporting color-management infrastructure.
 
 This repository is intended as a practical creative (heavily authored and personally biased) display config rather than a neutral color-management option. I've made something pleasant for my eyes/direction and it'll hopefully be pleasant for yours as well.
 
@@ -14,9 +14,9 @@ Will most likely be evolving this in the future based on explorations and deleti
 
 `authored-DRTs` contains a slim OCIO v2 config centered on:
 
-- Non-neutral display rendering views
-- Multiple authored variants built around each DRT family
-- A retained set of JP2499DRT looks (to be deleted soon most likely)
+- An authored OpenDRT family with multiple creative branches
+- An authored JP2499DRT family with custom variants
+- Non-neutral display-rendering views
 - Common camera/log input spaces
 - ACES interchange spaces (for pipe sanity, make it ACEScg config yourself if you want to)
 - Texture/data utility spaces with aliases
@@ -38,9 +38,9 @@ Use:
 config-2020.ocio
 ```
 
-The active display-rendering views are intentionally curated. The current OpenDRT-facing view order starts with the Flawed Emulsion family, then Bleached, Gentle Touch, Shifted Crisp, OpenDRT Standard, and the retained JP2499DRT views.
+The active display-rendering views are intentionally curated. The authored OpenDRT family starts with Flawed Emulsion, then Bleached, Gentle Touch, Shifted Crisp, and OpenDRT Standard, followed by the authored JP2499DRT family.
 
-## Authored Display Responses
+## Authored OpenDRT Family
 
 All views in this section are intentionally authored display responses rather than neutral technical transforms. The descriptions below summarize the intended image character of each one.
 
@@ -98,9 +98,9 @@ The D65 OpenDRT reference response, retained as the baseline for comparison with
 
 `OpenDRT Standard` keeps the OpenDRT name explicitly because it is the reference/base view. Custom variants omit the `OpenDRT` prefix in the visible view name to keep menus cleaner.
 
-## Retained JP2499DRT Views
+## Authored JP2499DRT Family
 
-The config also keeps a selected JP2499DRT section:
+The JP2499DRT family consists of the following authored variants:
 
 - `JP2499DRT`
 - `JP2499DRT - Editorial Split`
